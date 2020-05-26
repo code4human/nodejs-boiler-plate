@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
+const jwt = require('jsonwebtoken');
 
 const userSchema = mongoose.Schema({
     name: {
@@ -50,9 +51,34 @@ userSchema.pre('save', function( next ){
             });
         });
     } else {
+        // 비밀번호가 아닌 다른 것을 수정시 넘긴다.
         next()
     }
 })
+
+// index.js 의 login route에서 사용하는 comparePassword
+userSchema.methods.comparePassword = function(plainPassword, cb) {
+    // plainPassword place1234, 데이터베이스에 있는 암호화된 비밀번호 $2b$10$hKG2KXT6kP59P3d/vZlmDOgoENu2pgCkdS.8E1DXAFFgD5Ry02JES
+    bcrypt.compare(plainPassword, this.password, function(err, isMatch){
+        if(err) return cb(err);   // 에러 있는 경우
+        cb(null, isMatch);    // 에러 없는 경우 : 콜백(에러 없음, isMatch true)
+    })
+}
+
+userSchema.methods.generateToken = function(cb) {
+    var user = this;
+    // jsonwebtoken을 이용해서 토큰을 생성하기
+    var token = jwt.sign(user._id.toHexString(), 'secretToken');
+    // user._id + 'secretToken' = token
+    // ->
+    // 'secretToken' -> user._id
+
+    user.token = token;  
+    user.save(function(err, user){
+        if(err) return cb(err);   // 에러가 있으면 콜백함수로 error를 전달한다.
+        cb(null, user);   // 에러 없을 때 콜백으로 넘기는 user 정보는 index.js로 간다.
+    })
+}
 
 // 모델 생성
 // mongoose.model('생성할 모델명', 스키마명)
