@@ -26,8 +26,12 @@ app.post('/register', (req, res) => {
   // 그 데이터를 데이터베이스에 넣어준다.
 
   // request의 body 안에는 json 형식으로 객체처럼 들어있다.
-  const user = new User(req.body)
+  // 모든 정보를 User 모델에 넣어준다.
+  const user = new User(req.body)   
 
+  // save 전에 비밀번호 암호화 : User.js의 userSchema.pre()
+
+  // save
   user.save((err, userInfo) => {
     if (err) return res.json({ success: false, err })
     return res.status(200).json({
