@@ -3,6 +3,9 @@ const app = express()
 const port = 5000
 
 const bodyParser = require('body-parser');
+
+const config = require('./config/key');
+
 const { User } = require("./models/User");
 
 // application/x-www-form-urlencoded 데이터 분석해서 가져온다
@@ -11,7 +14,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
 const mongoose = require('mongoose')
-mongoose.connect('mongodb+srv://TenaKim:mongo2020@boilerplate-3mfre.azure.mongodb.net/test?retryWrites=true&w=majority', {
+mongoose.connect(config.mongoURI, {
     useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true, useFindAndModify: false
 }).then(() => console.log('MongoDB Connected...'))
   .catch(err => console.log(err))
